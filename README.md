@@ -63,4 +63,4 @@ npm run dev
 
 ## Дашборд
 
-[https://gbc-dashboard.vercel.app](https://gbc-dashboard.vercel.app)
+[https://project-xz6ye.vercel.app](https://project-xz6ye.vercel.app)
