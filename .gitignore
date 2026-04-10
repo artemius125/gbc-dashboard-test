@@ -1,0 +1,7 @@
+.env
+.env.local
+node_modules/
+dashboard/node_modules/
+dashboard/.next/
+.DS_Store
+env.txt

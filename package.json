@@ -1,0 +1,15 @@
+{
+  "name": "gbc-dashboard",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "upload": "node upload_orders.js",
+    "sync": "node sync_to_supabase.js",
+    "bot": "node telegram_bot.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "node-fetch": "^3.3.2",
+    "dotenv": "^16.4.5"
+  }
+}
