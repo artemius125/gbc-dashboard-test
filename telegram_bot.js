@@ -1,26 +1,38 @@
 import 'dotenv/config';
 import fetch from 'node-fetch';
+import { readFileSync, writeFileSync, existsSync } from 'fs';
 
 const CRM_URL = process.env.RETAILCRM_URL;
 const API_KEY = process.env.RETAILCRM_API_KEY;
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
-const CHECK_INTERVAL = 60_000; // проверять раз в минуту
+const CHECK_INTERVAL = 60_000;
 const THRESHOLD = 50_000;
+const STATE_FILE = '.bot_state.json';
 
-let lastCheckedAt = new Date().toISOString();
+function loadLastCheckedAt() {
+  if (existsSync(STATE_FILE)) {
+    try {
+      const state = JSON.parse(readFileSync(STATE_FILE, 'utf-8'));
+      return state.lastCheckedAt;
+    } catch {}
+  }
+  return null;
+}
+
+function saveLastCheckedAt(ts) {
+  writeFileSync(STATE_FILE, JSON.stringify({ lastCheckedAt: ts }));
+}
+
+let lastCheckedAt = loadLastCheckedAt() || new Date().toISOString();
 
 async function sendTelegram(text) {
   const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      chat_id: CHAT_ID,
-      text,
-      parse_mode: 'HTML',
-    }),
+    body: JSON.stringify({ chat_id: CHAT_ID, text, parse_mode: 'HTML' }),
   });
   const data = await res.json();
   if (!data.ok) console.error('❌ Telegram ошибка:', data.description);
@@ -60,31 +72,27 @@ async function checkNewOrders() {
     }
 
     if (data.orders?.length > 0) {
-      console.log(
-        `🔍 Проверено ${data.orders.length} новых заказов (${new Date().toLocaleTimeString()})`
-      );
+      console.log(`🔍 Проверено ${data.orders.length} новых заказов (${new Date().toLocaleTimeString()})`);
     }
   } catch (err) {
     console.error('❌ Ошибка:', err.message);
   }
 
   lastCheckedAt = new Date().toISOString();
+  saveLastCheckedAt(lastCheckedAt);
 }
 
 async function main() {
+  const isFirstRun = !existsSync(STATE_FILE);
+
   console.log('\n🤖 Telegram-бот запущен!');
   console.log(`   Порог: ${THRESHOLD.toLocaleString('ru')} ₸`);
-  console.log(`   Интервал: ${CHECK_INTERVAL / 1000} сек\n`);
+  console.log(`   Интервал: ${CHECK_INTERVAL / 1000} сек`);
+  console.log(`   Последняя проверка: ${lastCheckedAt}\n`);
 
-  // Тестовое сообщение при запуске
   await sendTelegram('✅ Бот мониторинга заказов запущен!');
 
-  // Первая проверка — берём ВСЕ заказы, чтобы отправить уведомления
-  // о существующих крупных заказах (для скриншота)
-  lastCheckedAt = '2020-01-01T00:00:00+00:00';
   await checkNewOrders();
-
-  // Дальше — только новые
   setInterval(checkNewOrders, CHECK_INTERVAL);
 }
 

@@ -6,3 +6,4 @@ dashboard/.next/
 .DS_Store
 env.txt
 package-lock.json
+.bot_state.json
