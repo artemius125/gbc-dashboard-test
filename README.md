@@ -56,11 +56,6 @@ npm run dev
 
 3. Claude настроил `.env.example`, структуру деплоя на Vercel, `.gitignore`.
 
-## Где застрял
-
-- При первом запуске `upload_orders.js` некоторые заказы отклонялись из-за неверного формата полей — пришлось уточнить маппинг данных в RetailCRM API v5.
-- Supabase RLS (Row Level Security) по умолчанию блокировал чтение из дашборда — решилось добавлением policy `Allow public read`.
-
 ## Дашборд
 
 [https://project-xz6ye.vercel.app](https://project-xz6ye.vercel.app)
